@@ -1,0 +1,10 @@
+{
+  "SERVER_IP": "0.0.0.0",
+  "SERVER_PORT": 8888,
+  "MONITOR_PORT": 8889,
+  "TIMEOUT": 60,
+  "logger": {
+    "debug": true,
+    "level": "debug"
+  }
+}
