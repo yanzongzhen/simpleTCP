@@ -2,8 +2,6 @@ package main
 
 import (
 	"flag"
-	logger "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 	"net"
 	"os"
 	"simpletcp/config"
@@ -11,12 +9,15 @@ import (
 	"simpletcp/src/monitor"
 	"simpletcp/src/tcpserver"
 	"time"
+
+	logger "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 var configName = flag.String("config", "config", "配置文件名称，默认config")
 var configPath = flag.String("path", "./configs", "配置文件路径，默认path")
 
-func init () {
+func init() {
 
 	// logger.SetFormatter(&logger.JSONFormatter{})
 
@@ -79,11 +80,17 @@ func onMessage(c tcpserver.TcpConn, msg []byte) {
 
 func onTimeout(c tcpserver.TcpConn) {
 	logger.Errorf("Device: %s超时退出", c.GetDeviceId())
-	devices.DeviceStore.Delete(c.GetDeviceId())
 	c.Close()
+	devices.DeviceStore.Delete(c.GetDeviceId())
 }
 
 func onChangeDeviceID(c tcpserver.TcpConn) {
 	logger.Info("设置连接的 CONN DEVICE ID: ", c.GetDeviceId())
+	oldConn := devices.DeviceStore.GetByDeviceID(c.GetDeviceId())
+	if oldConn != nil {
+		logger.Info("移除连接的 OLD CONN DEVICE ID: ", c.GetDeviceId())
+		oldConn.Close()
+		devices.DeviceStore.Delete(c.GetDeviceId())
+	}
 	devices.DeviceStore.Add(c.GetDeviceId(), c)
 }
